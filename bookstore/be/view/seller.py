@@ -42,3 +42,21 @@ def add_stock_level():
     code, message = s.add_stock_level(user_id, store_id, book_id, add_num)
 
     return jsonify({"message": message}), code
+
+@bp_seller.route("/sent_order", methods=["POST"])
+def sent_order(self, user_id: str, store_id: str, order_id: str) -> (int, str):
+    user_id: str = request.json.get("user_id")
+    store_id: str = request.json.get("store_id")
+    order_id: str = request.json.get("order_id")
+    s = seller.Seller()
+    code, message = s.sent_order(user_id, store_id, order_id)
+    return jsonify({"message": message}), code
+
+
+@bp_seller.route("/get_store_order_list", methods=["GET"])
+def get_store_order_list():
+    store_id: str = request.args.get("store_id")
+    s = seller.Seller()
+    code, message, order_list = s.get_store_order_list(store_id)
+    return jsonify({"message": message, "order_list": order_list}), code
+

@@ -52,3 +52,29 @@ class Seller:
         headers = {"token": self.token}
         r = requests.post(url, headers=headers, json=json)
         return r.status_code
+    
+    def delete_book(self, seller_id: str, store_id: str, book_id: str) -> int:
+        json = {
+            "user_id": seller_id,
+            "store_id": store_id,
+            "book_id": book_id,
+        }
+        # print(simplejson.dumps(json))
+        url = urljoin(self.url_prefix, "delete_book")
+        headers = {"token": self.token}
+        r = requests.post(url, headers=headers, json=json)
+        return r.status_code
+    
+    def sent_order(self, store_id: str, book_id: str, user_id: str) -> int:
+        json = { 
+            "store_id": store_id,
+            "book_id": book_id,
+            "user_id": user_id,
+        }
+        # print(simplejson.dumps(json))
+        url = urljoin(self.url_prefix, "sent_order")
+        headers = {"token": self.token}
+        r = requests.post(url, headers=headers, json=json)
+        return r.status_code
+    
+    
