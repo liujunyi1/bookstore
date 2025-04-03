@@ -1,4 +1,7 @@
-import sqlite3 as sqlite
+import sys
+sys.path.append(r"C:\Users\19902\Desktop\CDMS.Xuan_ZHOU.2025Spring.DaSE-master\cdms.xuan_zhou.2025spring.dase\bookstore")
+
+import pymongo
 from be.model import error
 from be.model import db_conn
 
@@ -22,14 +25,16 @@ class Seller(db_conn.DBConn):
                 return error.error_non_exist_store_id(store_id)
             if self.book_id_exist(store_id, book_id):
                 return error.error_exist_book_id(book_id)
-
-            self.conn.execute(
-                "INSERT into store(store_id, book_id, book_info, stock_level)"
-                "VALUES (?, ?, ?, ?)",
-                (store_id, book_id, book_json_str, stock_level),
-            )
-            self.conn.commit()
-        except sqlite.Error as e:
+            doc={
+               'store_id': store_id,
+                'book_id': book_id,
+                'book_info': book_json_str,
+                'stock_level': stock_level
+            }
+            self.conn['store'].insert_one(doc)
+            #print(doc)
+            #self.conn.commit()
+        except pymongo.errors.PyMongoError as e:
             return 528, "{}".format(str(e))
         except BaseException as e:
             return 530, "{}".format(str(e))
@@ -46,13 +51,12 @@ class Seller(db_conn.DBConn):
             if not self.book_id_exist(store_id, book_id):
                 return error.error_non_exist_book_id(book_id)
 
-            self.conn.execute(
-                "UPDATE store SET stock_level = stock_level + ? "
-                "WHERE store_id = ? AND book_id = ?",
-                (add_stock_level, store_id, book_id),
+            self.conn['store'].update_one(
+                {'store_id': store_id, 'book_id': book_id},
+                {'$inc': {'stock_level': add_stock_level}},
             )
-            self.conn.commit()
-        except sqlite.Error as e:
+            #self.conn.commit()
+        except pymongo.errors.PyMongoError as e:
             return 528, "{}".format(str(e))
         except BaseException as e:
             return 530, "{}".format(str(e))
@@ -61,16 +65,30 @@ class Seller(db_conn.DBConn):
     def create_store(self, user_id: str, store_id: str) -> (int, str):
         try:
             if not self.user_id_exist(user_id):
+                #print("user_id not exist")
                 return error.error_non_exist_user_id(user_id)
             if self.store_id_exist(store_id):
+                #print("store_id exist")
                 return error.error_exist_store_id(store_id)
-            self.conn.execute(
-                "INSERT into user_store(store_id, user_id)" "VALUES (?, ?)",
-                (store_id, user_id),
-            )
-            self.conn.commit()
-        except sqlite.Error as e:
+            #print("-----------------------------")
+            user_store_doc = {
+                'user_id': user_id,
+                'store_id': store_id
+            }
+            
+            self.conn['user_store'].insert_one(user_store_doc)
+            #print(user_store_doc)
+            #self.conn.commit()
+        except pymongo.errors.PyMongoError as e:
             return 528, "{}".format(str(e))
         except BaseException as e:
             return 530, "{}".format(str(e))
         return 200, "ok"
+
+#seller=Seller()
+#seller.create_store('user1', 'store1')
+#seller.conn['user_store'].insert_one({'user_id':'user2','store_id':'store2'})
+#seller.create_store('user1', 'store1')
+#seller.create_store('user1', 'store1')
+#seller.add_book('user1', 'store1', 'book1', 'book_info1', 10)
+#seller.add_stock_level('user1', 'store1', 'book1', 10)
