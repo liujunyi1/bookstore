@@ -2,6 +2,9 @@ import logging
 import uuid
 import random
 import threading
+import sys
+sys.path.append(r"C:\Users\19902\Desktop\CDMS.Xuan_ZHOU.2025Spring.DaSE-master\cdms.xuan_zhou.2025spring.dase\bookstore")
+from fe.access import auth
 from fe.access import book
 from fe.access.new_seller import register_new_seller
 from fe.access.new_buyer import register_new_buyer
@@ -193,3 +196,7 @@ class Workload:
         self.n_payment_past = self.n_payment
         self.n_new_order_ok_past = self.n_new_order_ok
         self.n_payment_ok_past = self.n_payment_ok
+
+#BookDB.__init__()
+# code =auth.Auth.register(ATH,U'test_register_user_1743437019.3058887','test_register_password_1743437019.3058887')
+# print(code)

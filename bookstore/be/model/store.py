@@ -16,6 +16,7 @@ class Store:
     def init_tables(self):
         try:
             self.database["user"].create_index("user_id", unique=True)
+            #self.database["user"].create_index([("user_id", pymongo.ASCENDING)])
             self.database["user_store"].create_index([("user_id", 1), ("store_id", 1)], unique=True)
             self.database["store"].create_index([("store_id", 1), ("book_id", 1)], unique=True)
             self.database["new_order"].create_index("order_id", unique=True)

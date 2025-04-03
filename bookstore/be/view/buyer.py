@@ -24,6 +24,7 @@ def new_order():
 
 @bp_buyer.route("/payment", methods=["POST"])
 def payment():
+    #return jsonify({"message": "ok"}), 601
     user_id: str = request.json.get("user_id")
     order_id: str = request.json.get("order_id")
     password: str = request.json.get("password")
@@ -40,3 +41,35 @@ def add_funds():
     b = Buyer()
     code, message = b.add_funds(user_id, password, add_value)
     return jsonify({"message": message}), code
+
+@bp_buyer.route("/received_order", methods=["POST"])
+def received_order():
+    user_id: str = request.json.get("user_id")
+    store_id: str = request.json.get("store_id")
+    order_id: str = request.json.get("order_id")
+    b = Buyer()
+    code, message = b.received_order(user_id, store_id, order_id)
+    return jsonify({"message": message}), code
+
+
+@bp_buyer.route("/cancel_order", methods=["POST"])
+def cancel_order():
+    user_id: str = request.json.get("user_id")
+    password: str = request.json.get("password")
+    order_id: str = request.json.get("order_id")
+    b = Buyer()
+    code, message = b.cancel_order(user_id, password, order_id)
+    return jsonify({"message": message}), code
+
+
+
+@bp_buyer.route("/get_order_list", methods=["POST"])
+def get_order_list():
+    user_id: str = request.json.get("user_id")
+    store_id: str = request.json.get("store_id", None)
+    status: str = request.json.get("status", None)
+    order_id: str = request.json.get("order_id", None)
+    b = Buyer()
+    code, message, order_list = b.get_order_list(user_id, store_id, status, order_id)
+    return jsonify({"message": message, "order_list": order_list}), code
+

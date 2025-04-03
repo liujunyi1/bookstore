@@ -221,7 +221,7 @@ class searchBook(db_conn.DBConn):
 # cursor=search.conn['store'].find({'tags': {'$all': ['三毛', '撒哈拉的故事', '旅行']}})
 #res=search.find_book(reqtags=['三毛','撒哈拉的故事','旅行'])
 
-search=searchBook()
-#cursor=searchBook.find_book(reqtags=['三毛'],lowest_price=1500,highest_price=3000) 
-cursor=search.find_book() 
+# search=searchBook()
+# #cursor=searchBook.find_book(reqtags=['三毛'],lowest_price=1500,highest_price=3000) 
+# cursor=search.find_book() 
 

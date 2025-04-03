@@ -4,6 +4,7 @@ from urllib.parse import urljoin
 from fe.access.auth import Auth
 
 
+
 class Buyer:
     def __init__(self, url_prefix, user_id, password):
         self.url_prefix = urljoin(url_prefix, "buyer/")
@@ -48,3 +49,40 @@ class Buyer:
         headers = {"token": self.token}
         r = requests.post(url, headers=headers, json=json)
         return r.status_code
+    
+    def receive_order(self,store_id: str ,order_id: str) -> int:
+        json = {
+            "user_id": self.user_id,
+            "store_id":store_id ,
+            "order_id": order_id,
+        }
+        url = urljoin(self.url_prefix, "received_order")
+        headers = {"token": self.token}
+        r = requests.post(url, headers=headers, json=json)
+        return r.status_code
+    
+    def cancel_order(self, order_id: str) -> int:
+        json = {
+            "user_id": self.user_id,
+            "password": self.password,
+            "order_id": order_id,
+        }
+        url = urljoin(self.url_prefix, "cancel_order")
+        headers = {"token": self.token}
+        r = requests.post(url, headers=headers, json=json)
+        return r.status_code
+    
+    
+    
+    def get_order_list(self,store_id=None,status=None,order_id=None) -> (int, str):
+        json={
+            "user_id": self.user_id,
+            "store_id":store_id ,
+            "status": status,
+            "order_id": order_id,
+        }
+        url = urljoin(self.url_prefix, "get_order_list")
+        headers = {"token": self.token}
+        r = requests.post(url, headers=headers, json=json)
+        response_json = r.json()
+        return r.status_code, response_json

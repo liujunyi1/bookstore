@@ -121,7 +121,7 @@ class User(db_conn.DBConn):
             cursor = self.conn['user'].update_one({'user_id': user_id},{'$set': {'token': dummy_token, 'terminal': terminal}})
             if not cursor.matched_count:
                 return error.error_authorization_fail()
-            self.conn.commit()
+            #self.conn.commit()
         except pymongo.errors.PyMongoError.Error as e:
             return 528, "{}".format(str(e))
         except BaseException as e:
@@ -160,7 +160,7 @@ class User(db_conn.DBConn):
                     'terminal': terminal,
                 }},
             )
-            self.conn.commit()
+            #self.conn.commit()
         except pymongo.errors.PyMongoError as e:
             return 528, "{}".format(str(e))
         except BaseException as e:
@@ -168,4 +168,10 @@ class User(db_conn.DBConn):
         return 200, "ok"
 
 # user=User()
-# user.register("user2", "password2")
+# res=user.register("test_register_user_1743437019.3058887", "test_register_password_1743437019.3058887")
+# print(res)
+# print(user.user_id_exist('test_register_user_1743437019.3058887'))
+# if user.users.find_one({"user_id": 'test_register_user_1743437019.3058887'}):
+#     print("TRUE2")
+# else:
+#     print("FALSE2")

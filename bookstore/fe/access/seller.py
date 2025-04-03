@@ -29,7 +29,7 @@ class Seller:
         json = {
             "user_id": self.seller_id,
             "store_id": store_id,
-            "book_info": book_info.__dict__,
+            "book_info": book_info.__dict__,#将book对象转换为字典
             "stock_level": stock_level,
         }
         # print(simplejson.dumps(json))
@@ -52,3 +52,43 @@ class Seller:
         headers = {"token": self.token}
         r = requests.post(url, headers=headers, json=json)
         return r.status_code
+    
+    def delete_book(self, seller_id: str, store_id: str, book_id: str) -> int:
+        json = {
+            "user_id": seller_id,
+            "store_id": store_id,
+            "book_id": book_id,
+        }
+        # print(simplejson.dumps(json))
+        url = urljoin(self.url_prefix, "delete_book")
+        headers = {"token": self.token}
+        r = requests.post(url, headers=headers, json=json)
+        return r.status_code
+    
+    def sent_order(self, seller_id: str, store_id: str, order_id: str) -> int:
+        json = { 
+            "seller_id": seller_id,
+            "store_id": store_id,
+            "order_id": order_id,
+        }
+        # print(simplejson.dumps(json))
+        url = urljoin(self.url_prefix, "sent_order")
+        headers = {"token": self.token}
+        r = requests.post(url, headers=headers, json=json)
+        return r.status_code
+    
+    def get_order_list(self, user_id: str, store_id: str,status: str,order_id: str) -> [str]:
+        json = {
+            "user_id": user_id,
+            "seller_id": self.seller_id,
+            "store_id": store_id,
+            "status": status,
+            "order_id": order_id,
+        } 
+        url = urljoin(self.url_prefix, "get_order_list")
+        headers = {"token": self.token}
+        r = requests.post(url, headers=headers, json=json)
+        return r.status_code,r.json()
+    
+
+    
