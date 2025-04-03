@@ -18,8 +18,6 @@ error_code = {
     526: "",
     527: "",
     528: "",
-    601: "not correct order status.",
-    602: "no order list."
 }
 
 
@@ -63,11 +61,5 @@ def error_authorization_fail():
     return 401, error_code[401]
 
 
-def error_invalid_order_status():
-    return 601, error_code[601]
-
 def error_and_message(code, message):
     return code, message
-
-def error_non_exist_order_list():
-    return 602, error_code[602]

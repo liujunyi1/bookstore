@@ -1,31 +1,54 @@
 import logging
 import os
-import pymongo
+import sqlite3 as sqlite
 import threading
-from pymongo import MongoClient
+
 
 class Store:
-    client = None
-    database = None
+    database: str
 
-    def __init__(self):
-        self.client = pymongo.MongoClient('mongodb://localhost:27017')
-        self.database = self.client['bookstore']
+    def __init__(self, db_path):
+        self.database = os.path.join(db_path, "be.db")
         self.init_tables()
 
     def init_tables(self):
         try:
-            self.database["user"].create_index("user_id", unique=True)
-            #self.database["user"].create_index([("user_id", pymongo.ASCENDING)])
-            self.database["user_store"].create_index([("user_id", 1), ("store_id", 1)], unique=True)
-            self.database["store"].create_index([("store_id", 1), ("book_id", 1)], unique=True)
-            self.database["new_order"].create_index("order_id", unique=True)
-            self.database["new_order_detail"].create_index([("order_id", 1), ("book_id", 1)], unique=True)
-        except Exception as e:
-            logging.error(f"Error initializing collections: {e}")
+            conn = self.get_db_conn()
+            conn.execute(
+                "CREATE TABLE IF NOT EXISTS user ("
+                "user_id TEXT PRIMARY KEY, password TEXT NOT NULL, "
+                "balance INTEGER NOT NULL, token TEXT, terminal TEXT);"
+            )
 
-    def get_db_conn(self):
-        return self.database
+            conn.execute(
+                "CREATE TABLE IF NOT EXISTS user_store("
+                "user_id TEXT, store_id, PRIMARY KEY(user_id, store_id));"
+            )
+
+            conn.execute(
+                "CREATE TABLE IF NOT EXISTS store( "
+                "store_id TEXT, book_id TEXT, book_info TEXT, stock_level INTEGER,"
+                " PRIMARY KEY(store_id, book_id))"
+            )
+
+            conn.execute(
+                "CREATE TABLE IF NOT EXISTS new_order( "
+                "order_id TEXT PRIMARY KEY, user_id TEXT, store_id TEXT)"
+            )
+
+            conn.execute(
+                "CREATE TABLE IF NOT EXISTS new_order_detail( "
+                "order_id TEXT, book_id TEXT, count INTEGER, price INTEGER,  "
+                "PRIMARY KEY(order_id, book_id))"
+            )
+
+            conn.commit()
+        except sqlite.Error as e:
+            logging.error(e)
+            conn.rollback()
+
+    def get_db_conn(self) -> sqlite.Connection:
+        return sqlite.connect(self.database)
 
 
 database_instance: Store = None
@@ -33,13 +56,11 @@ database_instance: Store = None
 init_completed_event = threading.Event()
 
 
-def init_database():
-    return Store()
+def init_database(db_path):
+    global database_instance
+    database_instance = Store(db_path)
 
 
 def get_db_conn():
     global database_instance
-    #return database_instance.get_db_conn() if database_instance else init_database().get_db_conn()
-    if not database_instance:
-        database_instance = init_database()
     return database_instance.get_db_conn()

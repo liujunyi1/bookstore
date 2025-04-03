@@ -1,8 +1,7 @@
 import time
 
 import pytest
-import pymongo
-from pymongo import MongoClient
+
 from fe.access import auth
 from fe import conf
 
@@ -41,9 +40,4 @@ class TestRegister:
         assert code == 200
 
         code = self.auth.register(self.user_id, self.password)
-        if code == 200:
-            client=pymongo.MongoClient('mongodb://localhost:27017')
-            db=client['bookstore']
-            db['tmp'].insert_one({'user_id':self.user_id, 'password':self.password})
         assert code != 200
-
