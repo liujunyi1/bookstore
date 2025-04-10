@@ -31,6 +31,7 @@ class Seller(db_conn.DBConn):
                 'store_id': store_id,
                 'book_id': book_id,
                 'book_info': book_json_str,
+                'purchase_count':0,
                 'title': book_json_str['title'],
                 'author': book_json_str['author'],
                 'publisher': book_json_str['publisher'],
@@ -123,43 +124,7 @@ class Seller(db_conn.DBConn):
                 return 530, "{}".format(str(e))
             return 200, "ok"
     
-    # def get_store_order_list(self, store_id: str) -> (int, str, list):
-    #         conn = self.conn
-    #         try:
-    #             orders = list(conn["new_order"].find({"store_id": store_id}))
-    #             if not orders:
-    #                 return error.error_non_exist_order_list(store_id)
-    #             order_list = []
-    #             for order in orders:
-    #                 order_id = order["order_id"]
-    #                 order_detail = list(conn["order_detail"].find({"order_id": order_id}))
-    #                 order_info = {"order_id": order_id, "status": order["status"]}
-    #                 pass_time = time.time() - order["create_time"]
-    #                 if pass_time > 10:
-    #                     order_info["status"] = "cancelled"
-    #                 for detail in order_detail:
-    #                     # book_info = conn["store"].find_one({"store_id": detail["store_id"], "book_id": detail["book_id"]})
-    #                     # book_info_json = json.loads(book_info["book_info"])
-    #                     # book_info_json["count"] = detail["count"]
-    #                     # order_info[detail["book_id"]] = book_info_json
-    #                     order_info["book_id"] = detail["book_id"]
-    #                     order_info["count"] = detail["count"]
-    #                     order_info["price"] = detail["price"]
-    #                     order_info["user_id"] = order["user_id"]
-    #                 order_list.append(order_info)
-    #         except pymongo.errors.PyMongoError as e:
-    #             return 528, "{}".format(str(e)), []
-    #         except BaseException as e:
-    #             return 530, "{}".format(str(e)), []
-    #         return 200, "ok", order_list
-    
     def get_order_list(self, user_id: None,sell_id: str,store_id: str ,status: None,order_id: None) -> (int, str, list):
-            print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
-            print("user_id:",user_id)
-            print("sell_id:",sell_id)
-            print("store_id:",store_id)
-            print("status:",status)
-            print("order_id:",order_id)
             conn = self.conn
             try:
                 query = {"store_id": store_id,"user_id":sell_id}
@@ -169,8 +134,7 @@ class Seller(db_conn.DBConn):
             except pymongo.errors.PyMongoError as e:
                 return 528, "{}".format(str(e)), []
             except BaseException as e:
-                return 530, "{}".format(str(e)), []
-            print("1!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                return 530, "{}".format(str(e)), [] 
             try:
                 query = {"store_id": store_id}
                 if user_id:

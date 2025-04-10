@@ -8,7 +8,7 @@ import json
 import logging
 from be.model import db_conn
 from be.model import error
-
+from pymongo import MongoClient
 
 class Buyer(db_conn.DBConn):
     def __init__(self):
@@ -40,8 +40,8 @@ class Buyer(db_conn.DBConn):
                     return error.error_stock_level_low(book_id) + (order_id,)
 
                 books = {"book_id": book_id, "store_id": store_id, "stock_level": {"$gte": count}}
-                update = {"$inc": {"stock_level": -count}}
-                result = self.conn["store"].update_one(books, update)
+                update = {"$inc": {"stock_level": -count,"purchase_count":count}}
+                result = self.conn["store"].update_many(books, update)
                 if result.modified_count == 0:
                     return error.error_stock_level_low(book_id) + (order_id,)
 
@@ -76,8 +76,7 @@ class Buyer(db_conn.DBConn):
             if not order:
                 return error.error_invalid_order_id(order_id)
             
-            pass_time=time.time() - order["create_time"]
-            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            pass_time=time.time() - order["create_time"] 
             print(time.time(), order["create_time"], pass_time)
             if pass_time > 10:
                 return error.error_invalid_order_status(order_id)
@@ -218,29 +217,41 @@ class Buyer(db_conn.DBConn):
             return 200, "ok", order_list
 
     def cancel_order(self, user_id: str, password: str, order_id: str) -> (int, str):
+        
         conn = self.conn
         try:
-            order = conn["new_order"].find_one({"order_id": order_id})
+            order = conn["new_order"].find_one({"order_id": order_id}) 
             if not order:
                 return error.error_invalid_order_id(order_id)
             if order["user_id"] != user_id:
                 return error.error_authorization_fail()
-            buyer = conn["user"].find_one({"user_id": user_id})
+            buyer = conn["user"].find_one({"user_id": user_id}) 
             if not buyer:
                 return error.error_non_exist_user_id(user_id)
             if password != buyer["password"]:
                 return error.error_authorization_fail()
-
-            if order["status"] == "buy_unpaid":
+             
+            if order["status"] == "buy_unpaid" or "paid_unsent" or "sent_unreceived" or "received":
                 conn["new_order"].update_one({"order_id": order_id}, {"$set": {"status": "cancelled"}})
-            elif order["status"] == "paid_unsent" or "sent_unreceived" or "received":
+            #elif order["status"] == "paid_unsent" or "sent_unreceived" or "received":
                 conn["new_order"].update_one({"order_id": order_id}, {"$set": {"status": "cancelled"}})
                 price = sum(detail["price"] * detail["count"] for detail in conn["order_detail"].find({"order_id": order_id}))
-                conn["user"].update_one({"user_id": buyer["user_id"]}, {"$inc": {"balance": price}})
-                seller_id = conn["user_store"].find_one({"store_id": order["store_id"]})["user_id"]
-                conn["user"].update_one({"user_id": seller_id}, {"$inc": {"balance": -price}})
-                conn['store'].update_many({"store_id": order["store_id"]}, {"$inc": {"stock_level": detail["count"] for detail in conn["order_detail"].find({"order_id": order_id})}})
-            
+                if order["status"] != "buy_unpaid":
+                    conn["user"].update_one({"user_id": buyer["user_id"]}, {"$inc": {"balance": price}})
+                    seller_id = conn["user_store"].find_one({"store_id": order["store_id"]})["user_id"]
+                    conn["user"].update_one({"user_id": seller_id}, {"$inc": {"balance": -price}})
+                #conn['store'].update_many({"store_id": order["store_id"]}, {"$inc": {"stock_level": detail["count"] for detail in conn["order_detail"].find({"order_id": order_id})}})
+                #for detail in conn["order_detail"].find({"order_id": order_id}):
+                order_id=order["order_id"] 
+                for items in conn["order_detail"].find({"order_id": order_id}):
+                    book_id=items["book_id"]
+                    store_id=items["store_id"]
+                    count=items["count"]
+                    conn["store"].update_one({"store_id": store_id,"book_id":book_id},{"$inc":{"stock_level":count}})
+                    conn["store"].update_one({"store_id": store_id,"book_id":book_id},{"$inc":{"purchase_count":-count}})
+                #conn['store'].update_many({"store_id": order["store_id"]}, {"$inc": {"purchase_count": -detail["count"] for detail in conn["order_detail"].find({"order_id": order_id})}})
+                #更新库存
+                
         except pymongo.errors.PyMongoError as e:
             return 528, "{}".format(str(e))
         except BaseException as e:
